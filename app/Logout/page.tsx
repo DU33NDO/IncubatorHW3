@@ -1,4 +1,3 @@
-// app/logout/page.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -11,7 +10,7 @@ const Logout = () => {
 
   useEffect(() => {
     logout();
-    router.push("/authentication"); // Проверьте, что путь верный
+    router.push("/authentication"); 
   }, [logout, router]);
 
   return <div>Logging out...</div>;
