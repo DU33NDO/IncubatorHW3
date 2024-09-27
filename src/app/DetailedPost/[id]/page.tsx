@@ -3,8 +3,13 @@
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import moment from "moment";
+import moment, { now } from "moment";
 import CommentSection from "@/src/components/CommentSection";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "../../AuthContext";
+import { Button } from "@/components/ui/button";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface IPost {
   id: number;
@@ -20,14 +25,14 @@ interface IPost {
 
 const DetailedPost = () => {
   const { id } = useParams();
+  const { userId } = useAuth();
   const [post, setPost] = useState<IPost | null>(null);
   const [authorName, setAuthorName] = useState("");
   const [hasLiked, setHasLiked] = useState(false);
   const [hasDisliked, setHasDisliked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [disLikeCount, setDisLikeCount] = useState(0);
-  // const [likeTimer, setLikeTimer] = useState<NodeJS.Timeout | null>(null);
-  // const [dislikeTimer, setDislikeTimer] = useState<NodeJS.Timeout | null>(null);
+  const [newComment, setNewComment] = useState<string>("");
 
   useEffect(() => {
     if (id) {
@@ -79,6 +84,28 @@ const DetailedPost = () => {
       setDisLikeCount(disLikeCount - 1);
       setHasDisliked(false);
     }
+  }
+
+  async function handleAddComment() {
+    axios.post(`http://127.0.0.1:8000/blog/comments/`, {
+      main_text: newComment,
+      created_at: now,
+      post: id,
+      author: userId,
+      likes: 0,
+      dislikes: 0,
+    });
+    setNewComment("");
+    toast.success("Вы добавили коммент!", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
   }
 
   const formattedDate = moment(post?.date).format("D MMMM YYYY");
@@ -169,6 +196,20 @@ const DetailedPost = () => {
       <div className="flex justify-center">
         <p className="text-3xl font-superbold">COMMENTS</p>
       </div>
+
+      <div className="flex gap-4 mt-10 mb-10">
+        <Input
+          className="px-4 py-6"
+          placeholder="Write your comment"
+          onChange={(e) => setNewComment(e.target.value)}
+          value={newComment}
+        ></Input>
+        <Button onClick={handleAddComment} className="px-4 py-6">
+          →
+        </Button>
+        <ToastContainer />
+      </div>
+
       <CommentSection postId={post.id} />
     </div>
   );
